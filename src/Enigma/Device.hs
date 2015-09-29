@@ -7,6 +7,7 @@ module Enigma.Device
 where
 
 import Prelude hiding (log)
+import Data.Char
 import Data.List
 import Enigma.Base
 import Debug.Trace
@@ -34,19 +35,26 @@ defaultStepping e (EnigmaState r m l) = doubleStepping (_right e, r) (_middle e,
 encodeLetter :: EnigmaDevice -> EnigmaState -> Char -> (EnigmaState, Char)
 encodeLetter e = encodeLetter' (defaultStepping e) e
 
+lowerToUpper ch = chr( ord('A') + ord(ch) - ord('a') )
+upperToLower ch = chr( ord('a') + ord(ch) - ord('A') )
+
 -- Create a encoding function with a custom stepping function
 encodeLetter' :: (EnigmaState -> EnigmaState) -> EnigmaDevice -> EnigmaState -> Char -> (EnigmaState, Char)
 encodeLetter' stepping e state a =
   let state'@(EnigmaState r m l) = stepping state
-      pairs           = [ (_stecker e,          0)
-                        , (_etw e,              0)
-                        , (_cipher (_right e),  r-1)
-                        , (_cipher (_middle e), m-1)
-                        , (_cipher (_left e),   l-1)
-                        , (_cipher (_fourth e), (_pos4 e)-1)
-                        ]
-      b = conjugateEncode pairs (_ukw e) a
-  in ( state', b )
+      encode'' x = let pairs = [ (_stecker e,           0)
+                                , (_etw e,              0)
+                                , (_cipher (_right e),  r-1)
+                                , (_cipher (_middle e), m-1)
+                                , (_cipher (_left e),   l-1)
+                                , (_cipher (_fourth e), (_pos4 e)-1)
+                                ]
+                   in conjugateEncode pairs (_ukw e) a
+      -- the returned result
+      (st, b) | 'A' <= a && a <= 'Z' = (state', encode'' a)
+              | 'a' <= a && a <= 'z' = (state', upperToLower $ encode'' (lowerToUpper a))
+              | otherwise            = (state, a)
+  in  (st, b)
 
 -- create a message encoder
 mkEncoder :: (EnigmaDevice -> Stepper) -> EnigmaDevice -> MessageEncoder

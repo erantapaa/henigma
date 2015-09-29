@@ -33,7 +33,7 @@ test3 msg =
   let enc1 = CE.enigmaEncoding cfg msg
       state = toState cfg
       (_, enc2) = (_encoder pkg) state msg
-  in enc1 == enc2
+  in (enc1 == enc2, enc1, enc2)
 
 test4 = 
   let cfg1 = CE.configEnigma "b-γ-V-VIII-II" "LFAP" "UX.MO.KZ.AY.EF.PL" "03.17.04.11"

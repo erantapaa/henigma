@@ -1,11 +1,13 @@
 module Enigma.Base where
 
+import Data.Array
 import Data.Char
 import Data.List
 import Control.Applicative ((<|>))
 
 letters = [ 'A' .. 'Z' ]
 letterCount = length letters
+letterRange = ('A','Z')
 
 letterOrd :: Char -> Int
 letterOrd ch = ord ch - ord 'A'
@@ -17,15 +19,19 @@ rotateLetter :: Int -> Char -> Char
 rotateLetter i ch = letterChr (letterOrd ch + i) 
 
 -- A Permutation should have exactly 26 letters and be a permutation of ['A'..'Z'].
-type Permutation = String
+type Permutation = Array Char Char
 
-identityPerm = letters
+makePerm :: String -> Permutation
+makePerm str | length str == 26 = listArray letterRange str
+             | otherwise        = error "makePerm: must have exactly 26 letters"
+
+identityPerm = makePerm letters
 
 permEncode :: Permutation -> Char -> Char
-permEncode perm ch = perm !! (letterOrd ch)
+permEncode perm ch = perm ! ch
 
 inversePerm :: Permutation -> Permutation
-inversePerm perm = map snd $ sort [ (b,a) | a <- letters, let b = permEncode perm a ]
+inversePerm perm = array letterRange [ (b,a) | a <- letters, let b = permEncode perm a ]
 
 data Cipher = Cipher { _perm :: Permutation, _invperm :: Permutation }
        deriving (Show,Eq)
@@ -40,7 +46,7 @@ makeCipherFromPairs :: [(Char,Char)] -> Cipher
 makeCipherFromPairs pairs = Cipher perm (inversePerm perm)
   where go a = let Just b = lookup a pairs <|> lookup a invPairs <|> (Just a)
                in b
-        perm = map go letters
+        perm = makePerm (map go letters)
         invPairs = [ (b,a) | (a,b) <- pairs ]
 
 permShiftEncode :: Permutation -> Int -> Char -> Char
@@ -109,12 +115,13 @@ noStepping (_,rp) (_, mp) (_, lp) = EnigmaState  rp mp lp
 encodeMessage :: (EnigmaState -> Char -> (EnigmaState, Char)) -> EnigmaState -> String -> (EnigmaState, String)
 encodeMessage = mapAccumL
 
--- wheel definitions
 
-makeWheel :: Rotor -> Int -> Wheel
-makeWheel (perm,turns) ring = Wheel (makeCipher perm) turns ring
+-- rotor and wheel definitions
 
 type Rotor = (String,String)
+
+makeWheel :: Rotor -> Int -> Wheel
+makeWheel (permString,turns) ring = Wheel (makeCipher (makePerm permString)) turns ring
 
 makeRotor a b = (a,b)
 
@@ -135,9 +142,9 @@ ukwC     = "FVPJIAOYEDRZXWGCTKUQSBNMHL"
 ukwBThin = "ENKQAUYWJICOPBLMDXZVFTHRGS"
 ukwCThin = "RDOBJNTKVEHMLFCWZAXGYIPSUQ"
 
-etwQwerty   = makeCipher "QWERTZUIOASDFGHJKPYXCVBNML"
+etwQwerty   = makeCipher (makePerm "QWERTZUIOASDFGHJKPYXCVBNML")
 etwIdentity = identityCipher
-etwKZR      = makeCipher "ILXRZTKGJYAMWVDUFCPQEONSHB"
+etwKZR      = makeCipher (makePerm "ILXRZTKGJYAMWVDUFCPQEONSHB")
 
 identityWheel = Wheel identityCipher [] 0
 

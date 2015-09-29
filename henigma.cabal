@@ -19,7 +19,7 @@ library
                        Enigma.Base
                        Enigma.Device
                        Enigma.Parse
-  build-depends:       base >= 4.7 && < 5, mtl, pretty-show, split,
+  build-depends:       base >= 4.7 && < 5, mtl, pretty-show, split, array,
                        crypto-enigma
   default-language:    Haskell2010
 

@@ -59,7 +59,7 @@ createEnigma comps window plugstr ringsstr = do
                , _left    = makeWheel left   rleft
                , _fourth  = makeWheel fourth r4
                , _pos4    = windowPosition'  w4 r4
-               , _ukw     = fst reflector
+               , _ukw     = makePerm (fst reflector)
                }
 
       state = EnigmaState r m l
@@ -112,6 +112,6 @@ findRotor "BThin" = return $ makeRotor ukwBThin ""
 findRotor "CThin" = return $ makeRotor ukwCThin ""
 findRotor "b"     = return $ makeRotor ukwBThin ""
 findRotor "c"     = return $ makeRotor ukwCThin ""
-findRotor "id"    = return $ makeRotor identityPerm ""
+findRotor "id"    = return $ makeRotor letters ""
 findRotor name    = Left $ "unknown rotor name: " ++ name
 

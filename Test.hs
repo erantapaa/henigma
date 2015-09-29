@@ -18,7 +18,6 @@ testStepping cfg stepper n = all check $ take n (zip csteps dsteps)
         check (config,state) = toState config == state
 
 cfg = CE.configEnigma "b-β-V-VIII-III" "XQVI" "UX.MO.KZ.AY.EF.PL" "03.17.24.11"
--- pkg = createEnigma    "b-β-V-VIII-III" "XQVI" "UX.MO.KZ.AY.EF.PL" "03.17.24.11"
 
 pkg = let Right p = createEnigma    "b-β-V-VIII-III" "XQVI" "UX.MO.KZ.AY.EF.PL" "03.17.24.11"
       in p
@@ -35,4 +34,13 @@ test3 msg =
       state = toState cfg
       (_, enc2) = (_encoder pkg) state msg
   in enc1 == enc2
+
+test4 = 
+  let cfg1 = CE.configEnigma "b-γ-V-VIII-II" "LFAP" "UX.MO.KZ.AY.EF.PL" "03.17.04.11"
+      pkg1 = createEnigma    "b-γ-V-VIII-II" "LFAP" "UX.MO.KZ.AY.EF.PL" "03.17.04.11"
+      Right (EnigmaPackage device state stepper encoder) = pkg1
+
+      enc1 = CE.enigmaEncoding  cfg1 "KRIEG"
+      (_, enc2) = encoder state "KRIEG"
+  in (enc1 == enc2, enc1, enc2)
 

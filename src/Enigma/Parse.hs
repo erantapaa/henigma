@@ -40,7 +40,7 @@ createEnigma comps window plugstr ringsstr = do
 
   pairs <- parsePlugboard plugstr
 
-  let rotorNames = wordsBy (not . Char.isLetter) comps
+  let rotorNames = sepBy "-"  comps
   rotors <- mapM findRotor rotorNames
   assert (length rotorNames == 5) ("must specify exactly 5 rotar names: " ++ show rotorNames)
 
@@ -112,6 +112,7 @@ findRotor "BThin" = return $ makeRotor ukwBThin ""
 findRotor "CThin" = return $ makeRotor ukwCThin ""
 findRotor "b"     = return $ makeRotor ukwBThin ""
 findRotor "c"     = return $ makeRotor ukwCThin ""
-findRotor "id"    = return $ makeRotor letters ""
+findRotor "id"    = return $ makeRotor letters  ""
+findRotor ""      = return $ makeRotor letters  ""
 findRotor name    = Left $ "unknown rotor name: " ++ name
 

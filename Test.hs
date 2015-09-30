@@ -5,6 +5,21 @@ import qualified Crypto.Enigma as CE
 import Enigma.Base
 import Enigma.Device
 import Enigma.Parse
+import Data.Char
+import Data.List
+
+lowerToUpper ch = chr( ord('A') + ord(ch) - ord('a') )
+upperToLower ch = chr( ord('a') + ord(ch) - ord('A') )
+
+ce_encode :: CE.EnigmaConfig -> String -> (CE.EnigmaConfig, String)
+ce_encode = mapAccumL singleEncode
+
+singleEncode :: CE.EnigmaConfig -> Char -> (CE.EnigmaConfig, Char)
+singleEncode cfg ch | 'A' <= ch && ch <= 'Z' = let [b] = CE.enigmaEncoding cfg [ch]
+                                               in (CE.step cfg, b)
+                    | 'a' <= ch && ch <= 'z' = let [b] = CE.enigmaEncoding cfg [lowerToUpper ch]
+                                               in (CE.step cfg, upperToLower b)
+                    | otherwise              = (cfg, ch)
 
 toState :: CE.EnigmaConfig -> EnigmaState
 toState cfg = EnigmaState r m l
@@ -43,4 +58,28 @@ test4 =
       enc1 = CE.enigmaEncoding  cfg1 "KRIEG"
       (_, enc2) = encoder state "KRIEG"
   in (enc1 == enc2, enc1, enc2)
+
+test5 plaintext =
+  let Right pkg = createEnigma "B--I-II-III" "AAAA" "" "1 1 1 1"
+      (_,ciphertext) = (_encoder pkg) (_state pkg) plaintext
+  in ciphertext
+
+test6 plaintext =
+  let Right pkg = createEnigma "C-id-I-II-III" "AAAA" "" "1 1 1 1"
+      (_,ciphertext) = (_encoder pkg) (_state pkg) plaintext
+  in ciphertext
+
+test7 plaintext =
+  let Right pkg = createEnigma "A-id-I-II-III" "AAAA" "" "1 1 1 1"
+      (_,ciphertext) = (_encoder pkg) (_state pkg) plaintext
+  in ciphertext
+
+compareEnigmas rotors window stecker rings plaintext =
+  let cfg       = CE.configEnigma rotors window stecker rings
+      Right pkg = createEnigma rotors window stecker rings
+      (_, enc1) = ce_encode cfg plaintext
+      (_, enc2) = (_encoder pkg) (_state pkg) plaintext
+  in (enc1 == enc2, enc1, enc2)
+
+test8 = compareEnigmas "B--I-III-II" "ABCD" "" "5.4.1.3"
 

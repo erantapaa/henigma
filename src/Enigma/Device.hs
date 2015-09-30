@@ -49,7 +49,7 @@ encodeLetter' stepping e state a =
                                 , (_cipher (_left e),   l-1)
                                 , (_cipher (_fourth e), (_pos4 e)-1)
                                 ]
-                   in conjugateEncode pairs (_ukw e) a
+                   in conjugateEncode pairs (_ukw e) x
       -- the returned result
       (st, b) | 'A' <= a && a <= 'Z' = (state', encode'' a)
               | 'a' <= a && a <= 'z' = (state', upperToLower $ encode'' (lowerToUpper a))
